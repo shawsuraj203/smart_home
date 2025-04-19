@@ -1,0 +1,40 @@
+---
+
+### Sequence Diagram for [sens_db.py](http://_vscodecontentref_/1)
+
+```plantuml
+@startuml
+participant Main
+participant sens_db
+
+Main -> sens_db: setup_database()
+activate sens_db
+sens_db -> sens_db: Create connection to SQLite
+sens_db -> sens_db: Create SensorData table (if not exists)
+deactivate sens_db
+Main <-- sens_db: conn, cursor
+
+Main -> sens_db: store_data(cursor, conn, data)
+activate sens_db
+sens_db -> sens_db: Insert data into SensorData table
+sens_db -> sens_db: Commit transaction
+deactivate sens_db
+Main <-- sens_db: Acknowledgment
+
+Main -> sens_db: get_table_row_count()
+activate sens_db
+sens_db -> sens_db: Execute COUNT query
+Main <-- sens_db: count
+deactivate sens_db
+
+Main -> sens_db: read_row_by_index(row_index)
+activate sens_db
+sens_db -> sens_db: Validate row index
+alt Valid index
+    sens_db -> sens_db: Fetch row using OFFSET
+    Main <-- sens_db: row
+else Invalid index
+    Main <-- sens_db: None
+end
+deactivate sens_db
+@enduml

@@ -1,0 +1,36 @@
+@startuml
+participant Main
+participant sen_web
+participant sens_db
+participant requests
+participant Server
+
+Main -> sen_web: post_sensor_data()
+activate sen_web
+
+loop Infinite Loop
+    sen_web -> sens_db: get_table_row_count()
+    sens_db --> sen_web: table_row_count
+
+    loop While post_curser < table_row_count
+        sen_web -> sens_db: read_row_by_index(post_curser)
+        sens_db --> sen_web: sens_data
+
+        sen_web -> sen_web: create_data_entry(sens_data)
+        sen_web -> requests: POST(URL, json=post_data)
+        alt Response status == 200
+            requests --> sen_web: Success Response
+            sen_web -> Main: Print "Data sent successfully!"
+        else Response status != 200
+            requests --> sen_web: Error Response
+            sen_web -> Main: Print "Server returned an error"
+        end
+
+        sen_web -> sen_web: Increment post_curser
+    end
+
+    sen_web -> Main: Print "Waiting for new data..."
+    sen_web -> sen_web: Sleep for 60 seconds
+end
+deactivate sen_web
+@enduml

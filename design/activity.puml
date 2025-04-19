@@ -1,0 +1,26 @@
+@startuml
+start
+
+:Initialize ADC (sen_hal);
+:Setup database (sens_db);
+
+fork
+  :Start data collection thread;
+fork again
+  :Start web posting thread;
+end fork
+
+repeat
+  :Collect sensor data in loop;
+  :Store data in database (sens_db);
+repeat while (data collection continues)
+
+repeat
+  :Post sensor data to web (sen_web.post_sensor_data);
+repeat while (web posting continues)
+
+:Stop threads on interrupt;
+:Close database connection;
+
+stop
+@enduml

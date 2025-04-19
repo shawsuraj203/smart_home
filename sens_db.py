@@ -1,10 +1,9 @@
-# import RPi.GPIO as GPIO
 import time
 import sqlite3
 
-DB_NAME = 'sensor_data_new.db'
-# GPIO and database configuration
 
+# Initialize the database connection
+DB_NAME = 'sensor_data.db'
 conn = None
 
 # Function to set up SQLite database
@@ -38,38 +37,6 @@ def store_data(cursor, conn, data):
     except Exception as e:
         print(f"Unexpected error: {e}")
 
-# Function to fetch data based on user input
-def fetch_data_by_user_input(cursor):
-    try:
-        # Get user input for the query
-        print("Enter filter criteria:")
-        device_id = input("Device ID (leave blank for all): ").strip()
-        limit = input("Number of entries to fetch (leave blank for all): ").strip()
-
-        # Build the SQL query dynamically based on user input
-        query = "SELECT * FROM SensorData"
-        conditions = []
-        
-        if device_id:
-            conditions.append(f"deviceid = '{device_id}'")
-        if conditions:
-            query += " WHERE " + " AND ".join(conditions)
-        if limit:
-            query += f" LIMIT {int(limit)}"
-        
-        cursor.execute(query)
-        rows = cursor.fetchall()
-
-        print("Filtered Database Entries:")
-        for row in rows:
-            print(row)
-    except sqlite3.DatabaseError as e:
-        print(f"Database error while fetching data: {e}")
-    except ValueError as e:
-        print(f"Invalid input: {e}")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-
 def get_table_row_count():
     global conn
     cursor = conn.cursor()
@@ -78,7 +45,6 @@ def get_table_row_count():
     cursor.close()
     return count
 
-import sqlite3
 
 def read_row_by_index(row_index):
     """

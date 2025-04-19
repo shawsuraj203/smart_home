@@ -1,0 +1,24 @@
+@startuml
+participant Main
+participant sen_hal
+participant sens_db
+participant sen_web
+
+Main -> sen_hal: adc_init()
+Main -> sens_db: setup_database()
+Main -> Thread1: Start data_Collection(cursor, conn)
+Main -> Thread2: Start sen_web.post_sensor_data()
+
+loop data_Collection
+    Thread1 -> sen_hal: read_current(device_id)
+    Thread1 -> sens_db: store_data(cursor, conn, data_entry)
+end
+
+loop post_sensor_data
+    Thread2 -> sen_web: post_sensor_data()
+end
+
+Main -> Thread1: Stop on KeyboardInterrupt
+Main -> Thread2: Stop on KeyboardInterrupt
+Main -> sens_db: Close database connection
+@enduml

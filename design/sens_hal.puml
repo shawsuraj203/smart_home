@@ -1,0 +1,22 @@
+@startuml
+participant Main
+participant sen_hal
+participant Adafruit_ADS1x15
+participant busio
+
+Main -> sen_hal: adc_init()
+activate sen_hal
+sen_hal -> busio: Create I2C bus instance
+sen_hal -> Adafruit_ADS1x15: Create ADS1115 ADC instance
+return ADC instance
+deactivate sen_hal
+
+Main -> sen_hal: read_current(device_id)
+activate sen_hal
+sen_hal -> Adafruit_ADS1x15: read_adc(device_id, gain=GAIN)
+return raw_value
+sen_hal -> sen_hal: Convert raw_value to voltage
+sen_hal -> sen_hal: Calculate current in Amperes
+return current
+deactivate sen_hal
+@enduml
