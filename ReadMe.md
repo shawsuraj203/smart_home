@@ -2,6 +2,41 @@
 
 This document provides an overview of the smart home sensor system, including hardware abstraction, database management, data collection, and web posting functionalities.
 
+## HW Design
+
+![image](https://github.com/user-attachments/assets/7211f2e8-347e-4e03-a3d0-18f1f4ff3e16)
+
+---
+
+## Workflow
+
+1. **Initialize the System**:
+   - The ADC is initialized using `sen_hal.adc_init()`.
+   - A database connection is established using `sens_db.setup_database()`.
+
+2. **Data Collection**:
+   - The `data_Collection` function collects sensor data and stores it in the database.
+
+3. **Web Posting**:
+   - The `post_sensor_data` function posts the collected data to a web interface.
+
+4. **Graceful Shutdown**:
+   - The script handles interruptions (e.g., `KeyboardInterrupt`) and ensures proper cleanup of resources.
+
+---
+
+## Dependencies
+
+- `time`, `threading`: Standard Python libraries.
+- `sqlite3`: For database management.
+- `requests`: For HTTP requests.
+- `board`, `busio`, `Adafruit_ADS1x15`: For hardware abstraction.
+
+
+## Flow Chart
+
+   ![activity](https://github.com/user-attachments/assets/deea4e95-d5f7-489b-bb2a-6ce575bb85ee)
+
 ---
 
 ## 1. `sen_hal.py` - Sensor Hardware Abstraction Layer
@@ -72,6 +107,9 @@ print(f"Current: {current} A")
    current = read_current(0)
    print(f"Current: {current} A")
    ```
+
+  ![sens_hal](https://github.com/user-attachments/assets/c55cf505-2539-4192-a284-bf953a9caca9)
+
 
 ---
 
@@ -148,10 +186,32 @@ if row:
 else:
     print("Invalid row index.")
 ```
+![sens_db](https://github.com/user-attachments/assets/68473043-baff-4a34-99e9-60bd00392cfe)
 
 ---
 
-## 3. `main.py` - Smart Home Sensor Data Collection and Web Posting
+## 3. `sen_web.py` - Sensor Data Web Posting
+
+This module posts sensor data from the database to a remote server using HTTP requests.
+
+### Constants
+- **`URL`**: The URL of the remote server to which the sensor data will be posted.
+
+### Functions
+
+#### `post_sensor_data()`
+Posts sensor data from the database to a remote server.
+
+##### Example Usage:
+```python
+post_sensor_data()
+```
+
+![sens_Web](https://github.com/user-attachments/assets/981dc4e8-5870-4cf8-a990-4e83a2c36070)
+
+---
+
+## 4. `main.py` - Smart Home Sensor Data Collection and Web Posting
 
 This script orchestrates the entire workflow of the smart home system, including data collection, storage, and web posting.
 
@@ -195,57 +255,16 @@ Initializes the system, starts data collection and web posting threads, and mana
 if __name__ == "__main__":
     main()
 ```
+![sequence](https://github.com/user-attachments/assets/2e9ab3e6-ba80-46f2-8660-7b31cafca3e5)
 
----
 
-## 4. `sen_web.py` - Sensor Data Web Posting
 
-This module posts sensor data from the database to a remote server using HTTP requests.
-
-### Constants
-- **`URL`**: The URL of the remote server to which the sensor data will be posted.
-
-### Functions
-
-#### `post_sensor_data()`
-Posts sensor data from the database to a remote server.
-
-##### Example Usage:
-```python
-post_sensor_data()
-```
-
----
-
-## Example Workflow
-
-1. **Initialize the System**:
-   - The ADC is initialized using `sen_hal.adc_init()`.
-   - A database connection is established using `sens_db.setup_database()`.
-
-2. **Data Collection**:
-   - The `data_Collection` function collects sensor data and stores it in the database.
-
-3. **Web Posting**:
-   - The `post_sensor_data` function posts the collected data to a web interface.
-
-4. **Graceful Shutdown**:
-   - The script handles interruptions (e.g., `KeyboardInterrupt`) and ensures proper cleanup of resources.
-
----
-
-## Dependencies
-
-- `time`, `threading`: Standard Python libraries.
-- `sqlite3`: For database management.
-- `requests`: For HTTP requests.
-- `board`, `busio`, `Adafruit_ADS1x15`: For hardware abstraction.
 
 ---
 
 ## Notes
 
-- The system assumes a constant voltage of 230V for power calculations.
+- The system assumes a constant voltage of 230V for power calculations for indian households.
 - Update the `URL` in `sen_web.py` to match the actual server endpoint.
 
 ---
