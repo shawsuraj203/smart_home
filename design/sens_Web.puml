@@ -20,16 +20,12 @@ loop Infinite Loop
         sen_web -> requests: POST(URL, json=post_data)
         alt Response status == 200
             requests --> sen_web: Success Response
-            sen_web -> Main: Print "Data sent successfully!"
         else Response status != 200
             requests --> sen_web: Error Response
-            sen_web -> Main: Print "Server returned an error"
         end
 
         sen_web -> sen_web: Increment post_curser
     end
-
-    sen_web -> Main: Print "Waiting for new data..."
     sen_web -> sen_web: Sleep for 60 seconds
 end
 deactivate sen_web

@@ -7,13 +7,19 @@ participant busio
 Main -> sen_hal: adc_init()
 activate sen_hal
 sen_hal -> busio: Create I2C bus instance
+activate busio
+return busio_instance
+deactivate busio
 sen_hal -> Adafruit_ADS1x15: Create ADS1115 ADC instance
+activate Adafruit_ADS1x15
 return ADC instance
+deactivate Adafruit_ADS1x15
 deactivate sen_hal
 
 Main -> sen_hal: read_current(device_id)
 activate sen_hal
 sen_hal -> Adafruit_ADS1x15: read_adc(device_id, gain=GAIN)
+activate Adafruit_ADS1x15
 return raw_value
 sen_hal -> sen_hal: Convert raw_value to voltage
 sen_hal -> sen_hal: Calculate current in Amperes

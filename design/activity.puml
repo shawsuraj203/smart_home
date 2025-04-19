@@ -6,18 +6,19 @@ start
 
 fork
   :Start data collection thread;
+  while (data collection continues) is (yes)
+    :Collect sensor data in loop;
+    :Store data in database (sens_db);
+  endwhile (no)
+  :Stop data collection thread;
 fork again
   :Start web posting thread;
+  while (web posting continues?) is (yes)
+    :Read Sensor data from database (sens_db);
+    :Post sensor data to web (sen_web.post_sensor_data);
+   endwhile (no)
+  :Stop web posting thread;
 end fork
-
-repeat
-  :Collect sensor data in loop;
-  :Store data in database (sens_db);
-repeat while (data collection continues)
-
-repeat
-  :Post sensor data to web (sen_web.post_sensor_data);
-repeat while (web posting continues)
 
 :Stop threads on interrupt;
 :Close database connection;

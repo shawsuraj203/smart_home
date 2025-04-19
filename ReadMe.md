@@ -4,7 +4,13 @@ This document provides an overview of the smart home sensor system, including ha
 
 ## HW Design
 
-![image](https://github.com/user-attachments/assets/7211f2e8-347e-4e03-a3d0-18f1f4ff3e16)
+![](./out/design/hw_design.png)
+
+### HW Components
+1. Raspberry 5 with Raspbian OS installed.
+2. ACS712 Current Sensor
+3. ADS1115 ADC, 4 Channel 16 bit ADC
+4. Resistors and wiring for voltage measurement setup
 
 ---
 
@@ -33,9 +39,11 @@ This document provides an overview of the smart home sensor system, including ha
 - `board`, `busio`, `Adafruit_ADS1x15`: For hardware abstraction.
 
 
+
+
 ## Flow Chart
 
-   ![activity](https://github.com/user-attachments/assets/deea4e95-d5f7-489b-bb2a-6ce575bb85ee)
+   ![](./out/design/activity/activity.png)
 
 ---
 
@@ -108,7 +116,7 @@ print(f"Current: {current} A")
    print(f"Current: {current} A")
    ```
 
-  ![sens_hal](https://github.com/user-attachments/assets/c55cf505-2539-4192-a284-bf953a9caca9)
+  ![](./out/design/sens_hal/sens_hal.png)
 
 
 ---
@@ -186,7 +194,7 @@ if row:
 else:
     print("Invalid row index.")
 ```
-![sens_db](https://github.com/user-attachments/assets/68473043-baff-4a34-99e9-60bd00392cfe)
+![](./out/design/sens_db/sens_db.png)
 
 ---
 
@@ -207,7 +215,7 @@ Posts sensor data from the database to a remote server.
 post_sensor_data()
 ```
 
-![sens_Web](https://github.com/user-attachments/assets/981dc4e8-5870-4cf8-a990-4e83a2c36070)
+![](./out/design/sens_web/sens_web.png)
 
 ---
 
@@ -255,7 +263,7 @@ Initializes the system, starts data collection and web posting threads, and mana
 if __name__ == "__main__":
     main()
 ```
-![sequence](https://github.com/user-attachments/assets/2e9ab3e6-ba80-46f2-8660-7b31cafca3e5)
+![](./out/design/sequence/sequence.png)
 
 
 
