@@ -1,6 +1,8 @@
 import time
 import sqlite3
-
+import logging
+from  logger import setup_logger, log_message
+from main import log
 
 # Initialize the database connection
 DB_NAME = 'sensor_data.db'
@@ -10,7 +12,8 @@ conn = None
 def setup_database():
     global conn
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
-    cursor = conn.cursor()     
+    log_message(log, "Database connected successfully.", level=logging.INFO)
+    cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS SensorData (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         deviceid TEXT,
@@ -19,6 +22,7 @@ def setup_database():
         current REAL
     )''')
     conn.commit()
+    log_message(log, "Database Initialization completed.", level=logging.INFO)
     return conn, cursor
 
 
@@ -30,12 +34,12 @@ def store_data(cursor, conn, data):
             (data["deviceid"], data["timestamp"], data["power"], data["current"])
         )
         conn.commit()
-        print(f"Data saved: {data}")
+        log_message(log, "Data saved successfully: {0}".format(data), level=logging.DEBUG)
     except sqlite3.DatabaseError as e:
-        print(f"Database error: {e}")
+        log_message(log, "Database error: {0}".format(e), level=logging.ERROR)
         conn.rollback()
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        log_message(log, "Error occurred: {0}".format(e), level=logging.ERROR)
 
 def get_table_row_count():
     global conn
@@ -43,6 +47,7 @@ def get_table_row_count():
     cursor.execute("SELECT COUNT(*) FROM SensorData")
     count = cursor.fetchone()[0]
     cursor.close()
+    log_message(log, "Total rows in SensorData: {0}".format(count), level=logging.DEBUG)
     return count
 
 
@@ -65,7 +70,7 @@ def read_row_by_index(row_index):
         row_count = get_table_row_count()
         # Validate the index
         if row_index < 0 or row_index >= row_count:
-            print("Index out of range.")
+            log_message(log, "Invalid row index: {0}. Valid range is 0 to {1}".format(row_index, row_count - 1), level=logging.WARNING)
             cursor.close()
             return None
 
