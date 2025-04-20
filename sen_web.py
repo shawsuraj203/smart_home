@@ -2,14 +2,15 @@ import time
 import requests
 import logging
 import sens_db
-from main import create_data_entry, log
-from  logger import setup_logger, log_message
-
+from  logger import setup_logger, log_message, get_logger
+ 
 URL = "http://192.168.0.129:8000/data/"
-post_curser = 0
-
+post_curser = 942
+log = None
 def post_sensor_data():
     global post_curser
+    global log
+    log = get_logger()
     while True:
         table_row_count = sens_db.get_table_row_count()
         log_message(log, "Number of new data available: {0}".format(table_row_count - post_curser), level=logging.INFO)
@@ -29,3 +30,13 @@ def post_sensor_data():
                 post_curser += 1
         log_message(log,"Waiting for new data...", level=logging.INFO)
         time.sleep(60)
+    return  # End of the function
+
+# Function to create a key-value pair (dictionary) for each data entry
+def create_data_entry(deviceid, power, current, timestamp):
+    return {
+        "deviceid": deviceid,
+        "power": power,
+        "current": current,
+        "timestamp": timestamp,
+    }

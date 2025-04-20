@@ -4,10 +4,10 @@ import logging
 
 import Adafruit_ADS1x15
 
-from  logger import setup_logger, log_message
-from main import log
+from  logger import setup_logger, log_message, get_logger
 
 adc = None
+log = None
 
 # Gain setting for the ADC (adjust based on your voltage range)
 GAIN = 1
@@ -21,6 +21,8 @@ def adc_init():
   Initialize the ADC.
   """
   global adc
+  global log 
+  log = get_logger()
   # Create an ADS1115 ADC instance
   # Create the I2C bus
   #bus = busio.I2C(board.SCL, board.SDA)
@@ -39,7 +41,7 @@ def read_current(device_id):
     current = (voltage - (VREF / 2)) / ACS712_SENSITIVITY
     log_message(log, "Current: {0:.2f} A".format(current), level=logging.INFO)
   except Exception as e:
-   log_message(log, "Exception occueced: {e}".format(e), level=logging.DEBUG)
+   log_message(log, "Exception occurred: {}".format(e), level=logging.DEBUG)
    current = None
   return current
 

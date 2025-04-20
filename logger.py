@@ -1,5 +1,7 @@
 import logging
 
+log = None
+
 def setup_logger(name, log_file, level=logging.INFO):
     """Function to setup a logger with a specific name and log file.
 
@@ -11,6 +13,7 @@ def setup_logger(name, log_file, level=logging.INFO):
     Returns:
         logging.Logger: Configured logger instance.
     """
+    global log
     # Create a custom logger
     logger = logging.getLogger(name)
     logger.setLevel(level)
@@ -27,7 +30,7 @@ def setup_logger(name, log_file, level=logging.INFO):
     # Add the handlers to the logger
     logger.addHandler(file_handler)
     logger.addHandler(stream_handler)
-
+    log = logger
     return logger
 
 def log_message(logger, message, level=logging.INFO):
@@ -50,3 +53,7 @@ def log_message(logger, message, level=logging.INFO):
         logger.critical(message)
     else:
         logger.info(message)
+
+def get_logger():
+    """Function to get the global logger instance."""
+    return log

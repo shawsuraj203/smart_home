@@ -1,16 +1,18 @@
 import time
 import sqlite3
 import logging
-from  logger import setup_logger, log_message
-from main import log
+from  logger import setup_logger, log_message, get_logger
 
 # Initialize the database connection
 DB_NAME = 'sensor_data.db'
 conn = None
+log = None
 
 # Function to set up SQLite database
 def setup_database():
     global conn
+    global log 
+    log = get_logger()
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
     log_message(log, "Database connected successfully.", level=logging.INFO)
     cursor = conn.cursor()
@@ -47,7 +49,7 @@ def get_table_row_count():
     cursor.execute("SELECT COUNT(*) FROM SensorData")
     count = cursor.fetchone()[0]
     cursor.close()
-    log_message(log, "Total rows in SensorData: {0}".format(count), level=logging.DEBUG)
+    #log_message(log, "Total rows in SensorData: {0}".format(count), level=logging.DEBUG)
     return count
 
 

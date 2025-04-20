@@ -2,6 +2,7 @@ import threading
 import time
 import logging
 
+
 import sens_db
 import sen_web
 import sen_hal
@@ -9,7 +10,9 @@ from  logger import setup_logger, log_message
 
 DEVICE_IDS = [0]  # List of device IDs
 VOLTAGE = 230  # Constant voltage for all devices (placeholder)
+
 log = None
+
 # Function to simulate reading sensor data based on device ID
 def read_sensor_data(device_id):
     # Simulate random current values between 5 and 15 (as an example)
@@ -20,14 +23,6 @@ def read_sensor_data(device_id):
     log_message(log, "Device ID: {0}, Power: {1:.2f} W, Current: {2:.2f} A".format(device_id, power, current), level=logging.DEBUG)
     return power, current
 
-# Function to create a key-value pair (dictionary) for each data entry
-def create_data_entry(deviceid, power, current, timestamp):
-    return {
-        "deviceid": deviceid,
-        "power": power,
-        "current": current,
-        "timestamp": timestamp,
-    }
 
 def data_Collection(cursor, conn):
     while True:
@@ -38,7 +33,7 @@ def data_Collection(cursor, conn):
                 if power is None or current is None:
                     continue
                 timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-                data_entry = create_data_entry(device_id, power, current, timestamp)  # Create a key-value pair
+                data_entry = sen_web.create_data_entry(device_id, power, current, timestamp)  # Create a key-value pair
                 sens_db.store_data(cursor, conn, data_entry)  # Save data to database
         except KeyboardInterrupt:
             log_message(log, "Data collection interrupted by user.", level=logging.INFO)
