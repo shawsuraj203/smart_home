@@ -5,7 +5,7 @@ import sens_db
 from  logger import setup_logger, log_message, get_logger
  
 URL = "http://192.168.0.129:8000/data/"
-post_curser = 942
+post_curser = 0
 log = None
 def post_sensor_data():
     global post_curser
