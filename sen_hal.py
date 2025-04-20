@@ -30,9 +30,14 @@ def adc_init():
   log_message(log, "ADC initialized successfully.", level=logging.INFO)
 
 def read_current(device_id):
+  data = []
   try:
     # Read raw ADC value
-    raw_value = adc.read_adc(device_id, gain=GAIN)
+    for i  in range(10):
+      data.append(adc.read_adc(device_id, gain=GAIN))
+      time.sleep(1.5)
+    raw_value = max(data)  # Get the maximum value from the readings
+    # Calculate the average ADC value
     log_message(log, "Raw ADC Value: {0}".format(raw_value), level=logging.DEBUG)
     # Convert raw ADC value to voltage
     voltage = (raw_value / ADC_RESOLUTION) * VREF
@@ -41,8 +46,8 @@ def read_current(device_id):
     current = (voltage - (VREF / 2)) / ACS712_SENSITIVITY
     log_message(log, "Current: {0:.2f} A".format(current), level=logging.INFO)
   except Exception as e:
-   log_message(log, "Exception occurred: {}".format(e), level=logging.DEBUG)
-   current = None
+    log_message(log, "Exception occurred: {}".format(e), level=logging.DEBUG)
+    current = None
   return current
 
 '''

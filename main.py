@@ -38,7 +38,7 @@ def data_Collection(cursor, conn):
         except KeyboardInterrupt:
             log_message(log, "Data collection interrupted by user.", level=logging.INFO)
             break
-        time.sleep(1)  # Sleep for a second before collecting data again
+        time.sleep(20)  # Sleep for a second before collecting data again
     return 
 # Main function to start data collection and allow querying
 def main():
