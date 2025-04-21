@@ -5,7 +5,7 @@ import sens_db
 from  logger import setup_logger, log_message, get_logger
  
 URL = "http://192.168.0.129:8000/data/"
-MAX_DEVICE = 3
+MAX_DEVICE = 1
 VOLTAGE = 230
 post_curser = 0
 
@@ -22,14 +22,17 @@ def post_sensor_data():
             temp_data.append([])
         while post_curser < table_row_count:
             sens_data = sens_db.read_row_by_index(post_curser)
-            if sens_data[1] < MAX_DEVICE:
-                temp_data[sens_data[1]].append(sens_data[4])
+            if int(sens_data[1]) < MAX_DEVICE:
+                temp_data[int(sens_data[1])].append(float(sens_data[4]))
             post_curser += 1
         for device in range(MAX_DEVICE):
             try:
+                if len(temp_data[device]) == 0:
+                    log_message(log,"No data available for device {0}".format(device), level=logging.INFO)
+                    continue
                 current = max(temp_data[device])
                 timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-                post_data = create_data_entry(device, (current * VOLTAGE), current, timestamp)
+                post_data = create_data_entry(device, round((current * VOLTAGE),3), round(current,3) timestamp)
                 log_message(log,"Data to be sent: {0}".format( post_data), level=logging.DEBUG)
                 response = requests.post(URL, json=post_data)
                 if response.status_code == 200:
@@ -45,7 +48,7 @@ def post_sensor_data():
             except requests.exceptions.RequestException as e:
                 log_message(log,"Request failed: {0}".format(e), level=logging.ERROR)
         log_message(log,"Waiting for new data...", level=logging.INFO)
-        time.sleep(900)  # Sleep for 15 minutes before checking for new data
+        time.sleep(60)  # Sleep for 15 minutes before checking for new data
     return  # End of the function
 
 # Function to create a key-value pair (dictionary) for each data entry
