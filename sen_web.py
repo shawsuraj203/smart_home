@@ -18,6 +18,7 @@ def post_sensor_data():
     while True:
         table_row_count = sens_db.get_table_row_count()
         log_message(log, "Number of new data available: {0}".format(table_row_count - post_curser), level=logging.INFO)
+        temp_data = []
         for device in range(MAX_DEVICE):
             temp_data.append([])
         while post_curser < table_row_count:
@@ -32,7 +33,7 @@ def post_sensor_data():
                     continue
                 current = max(temp_data[device])
                 timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-                post_data = create_data_entry(device, round((current * VOLTAGE),3), round(current,3) timestamp)
+                post_data = create_data_entry(device, round((current * VOLTAGE),3), round(current,3), timestamp)
                 log_message(log,"Data to be sent: {0}".format( post_data), level=logging.DEBUG)
                 response = requests.post(URL, json=post_data)
                 if response.status_code == 200:

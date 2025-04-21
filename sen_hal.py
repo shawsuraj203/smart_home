@@ -38,8 +38,8 @@ def read_current(device_id):
       data.append(adc.read_adc(device_id, gain=GAIN))
       time.sleep(1.5)
     raw_value = max(data) - ADC_CALIBRATION # Get the maximum value from the readings
-    if raw_value < 0:
-      raw_value = 0
+    if raw_value < ADC_RESOLUTION/2:
+      raw_value = ADC_RESOLUTION/2 # Set a minimum threshold to avoid negative values
     # Calculate the average ADC value
     log_message(log, "Raw ADC Value: {0}".format(raw_value), level=logging.DEBUG)
     # Convert raw ADC value to voltage
