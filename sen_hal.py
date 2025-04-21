@@ -15,6 +15,7 @@ GAIN = 1
 ACS712_SENSITIVITY = 0.100  # Sensitivity in V/A (e.g., 100mV/A for 20A module)
 VREF = 5  # Reference voltage for ADS1115
 ADC_RESOLUTION = 32768  # 16-bit ADC resolution
+ADC_CALIBRATION = 4042  # Calibration offset for the ADC (if needed)
 
 def adc_init():
   """
@@ -36,7 +37,9 @@ def read_current(device_id):
     for i  in range(10):
       data.append(adc.read_adc(device_id, gain=GAIN))
       time.sleep(1.5)
-    raw_value = max(data)  # Get the maximum value from the readings
+    raw_value = max(data) - ADC_CALIBRATION # Get the maximum value from the readings
+    if raw_value < 0:
+      raw_value = 0
     # Calculate the average ADC value
     log_message(log, "Raw ADC Value: {0}".format(raw_value), level=logging.DEBUG)
     # Convert raw ADC value to voltage
