@@ -3,30 +3,41 @@ participant Main
 participant sen_web
 participant sens_db
 participant requests
-participant Server
 
 Main -> sen_web: post_sensor_data()
 activate sen_web
+sen_web -> sens_db: get_table_row_count()
+activate sens_db
+return table_row_count
 
-loop Infinite Loop
-    sen_web -> sens_db: get_table_row_count()
-    sens_db --> sen_web: table_row_count
-
-    loop While post_curser < table_row_count
-        sen_web -> sens_db: read_row_by_index(post_curser)
-        sens_db --> sen_web: sens_data
-
-        sen_web -> sen_web: create_data_entry(sens_data)
-        sen_web -> requests: POST(URL, json=post_data)
-        alt Response status == 200
-            requests --> sen_web: Success Response
-        else Response status != 200
-            requests --> sen_web: Error Response
-        end
-
-        sen_web -> sen_web: Increment post_curser
+loop Process rows
+    sen_web -> sens_db: read_row_by_index(post_curser)
+    activate sens_db
+    return sens_data
+    alt Valid device ID
+        sen_web -> sen_web: Append current to temp_data
+    else Invalid device ID
+        sen_web -> sen_web: Skip invalid device
     end
-    sen_web -> sen_web: Sleep for 60 seconds
+    sen_web -> sen_web: Increment post_curser
 end
+deactivate sens_db
+
+loop Post data for each device
+    alt No data for device
+        sen_web -> sen_web: Skip device
+    else Data available
+        sen_web -> sen_web: Get max current out of temp_data
+        sen_web -> sen_web: Create post_data (create_data_entry)
+        sen_web -> requests: POST(URL, json=post_data)
+        alt Success (status_code == 200)
+            sen_web -> sen_web: Acknowledge success
+        else Failure (status_code != 200)
+            sen_web -> requests: Retry POST(URL, json=post_data)
+        end
+    end
+end
+
+sen_web -> sen_web: Sleep for 900 seconds
 deactivate sen_web
 @enduml

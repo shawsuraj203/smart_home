@@ -25,8 +25,6 @@ def adc_init():
   global log 
   log = get_logger()
   # Create an ADS1115 ADC instance
-  # Create the I2C bus
-  #bus = busio.I2C(board.SCL, board.SDA)
   adc = Adafruit_ADS1x15.ADS1115(address=0x48, busnum=1)
   log_message(log, "ADC initialized successfully.", level=logging.INFO)
 
@@ -53,20 +51,4 @@ def read_current(device_id):
     current = None
   return current
 
-'''
-def read_current(device_id):
-  return random.uniform(0, 5)  # Simulate current reading for testing
 
-
-while True:
-  log = setup_logger("smart_home", "./smart_home.log", level=logging.DEBUG)
-  # Initialize the ADC
-  adc_init()
-  
-  # Read current from the first channel (0)
-  current = read_current(0)
-  
-  # Wait for a second before the next reading
-  time.sleep(1)
-
-'''

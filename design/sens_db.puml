@@ -6,35 +6,49 @@
 @startuml
 participant Main
 participant sens_db
+participant sqlite3
+participant Logger
 
 Main -> sens_db: setup_database()
 activate sens_db
-sens_db -> sens_db: Create connection to SQLite
-sens_db -> sens_db: Create SensorData table (if not exists)
+sens_db -> Logger: get_logger()
+activate Logger
+return logger
+deactivate Logger
+sens_db -> sqlite3: connect(DB_NAME, check_same_thread=False)
+activate sqlite3
+return conn
+deactivate sqlite3
+sens_db -> sqlite3: Create SensorData table (if not exists)
+sens_db -> sqlite3: Commit transaction
+return conn, cursor
 deactivate sens_db
-Main <-- sens_db: conn, cursor
 
 Main -> sens_db: store_data(cursor, conn, data)
 activate sens_db
-sens_db -> sens_db: Insert data into SensorData table
-sens_db -> sens_db: Commit transaction
+sens_db -> sqlite3: INSERT INTO SensorData (deviceid, timestamp, power, current)
+alt Success
+    sens_db -> sqlite3: Commit transaction
+else Failure
+    sens_db -> sqlite3: Rollback transaction
+end
 deactivate sens_db
-Main <-- sens_db: Acknowledgment
 
 Main -> sens_db: get_table_row_count()
 activate sens_db
-sens_db -> sens_db: Execute COUNT query
-Main <-- sens_db: count
+sens_db -> sqlite3: SELECT COUNT(*) FROM SensorData
+return count
 deactivate sens_db
 
 Main -> sens_db: read_row_by_index(row_index)
 activate sens_db
-sens_db -> sens_db: Validate row index
+sens_db -> sens_db: get_table_row_count()
 alt Valid index
-    sens_db -> sens_db: Fetch row using OFFSET
-    Main <-- sens_db: row
+    sens_db -> sqlite3: SELECT * FROM SensorData LIMIT 1 OFFSET row_index
+    return row
 else Invalid index
-    Main <-- sens_db: None
+    sens_db -> Logger: log_message("Invalid row index.")
 end
 deactivate sens_db
 @enduml
+```

@@ -1,22 +1,23 @@
 @startuml
 start
 
+:Initialize Logger (setup_logger);
 :Initialize ADC (sen_hal);
 :Setup database (sens_db);
 
 fork
   :Start data collection thread;
   while (data collection continues) is (yes)
-    :Collect sensor data in loop;
-    :Store data in database (sens_db);
+    :Read current from ADC (sen_hal.read_current);
+    :Calculate power and create data entry (sen_web.create_data_entry);
+    :Store data in database (sens_db.store_data);
   endwhile (no)
   :Stop data collection thread;
 fork again
   :Start web posting thread;
   while (web posting continues?) is (yes)
-    :Read Sensor data from database (sens_db);
     :Post sensor data to web (sen_web.post_sensor_data);
-   endwhile (no)
+  endwhile (no)
   :Stop web posting thread;
 end fork
 

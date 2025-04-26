@@ -3,7 +3,10 @@ participant Main
 participant sen_hal
 participant sens_db
 participant sen_web
+participant Thread1
+participant Thread2
 
+Main -> Logger: setup_logger("smart_home", "./smart_home.log", level=DEBUG)
 Main -> sen_hal: adc_init()
 Main -> sens_db: setup_database()
 Main -> Thread1: Start data_Collection(cursor, conn)
@@ -11,6 +14,8 @@ Main -> Thread2: Start sen_web.post_sensor_data()
 
 loop data_Collection
     Thread1 -> sen_hal: read_current(device_id)
+    Thread1 -> Main: read_sensor_data(device_id)
+    Main -> sen_web: create_data_entry(device_id, power, current, timestamp)
     Thread1 -> sens_db: store_data(cursor, conn, data_entry)
 end
 
