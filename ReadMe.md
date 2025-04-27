@@ -1,22 +1,25 @@
 # Smart Home Sensor System Documentation
 
-This document provides an overview of the smart home sensor system, including hardware abstraction, database management, data collection, and web posting functionalities.
+This document provides an overview of the smart home sensor system, including hardware abstraction, database management, data collection, web posting functionalities, and logging.
+
+---
 
 ## HW Design
 
 ![](./out/design/hw_design.png)
 
 ### HW Components
-1. Raspberry 5 with Raspbian OS installed.
-2. ACS712 Current Sensor
-3. ADS1115 ADC, 4 Channel 16 bit ADC
-4. Resistors and wiring for voltage measurement setup
+1. Raspberry Pi 5 with Raspbian OS installed.
+2. ACS712 Current Sensor.
+3. ADS1115 ADC, 4 Channel 16-bit ADC.
+4. Resistors and wiring for voltage measurement setup.
 
 ---
 
 ## Workflow
 
 1. **Initialize the System**:
+   - Initialize the logger module using `setup_logger()`.
    - The ADC is initialized using `sen_hal.adc_init()`.
    - A database connection is established using `sens_db.setup_database()`.
 
@@ -33,21 +36,63 @@ This document provides an overview of the smart home sensor system, including ha
 
 ## Dependencies
 
-- `time`, `threading`: Standard Python libraries.
+- `time`, `threading`, `logging`: Standard Python libraries.
 - `sqlite3`: For database management.
 - `requests`: For HTTP requests.
-- `board`, `busio`, `Adafruit_ADS1x15`: For hardware abstraction.
-
-
-
-
-## Flow Chart
-
-   ![](./out/design/activity/activity.png)
+- `Adafruit_ADS1x15`: For hardware abstraction.
 
 ---
 
-## 1. `sen_hal.py` - Sensor Hardware Abstraction Layer
+## Flow Chart
+
+![](./out/design/activity/activity.png)
+
+---
+
+## 1. `logger.py` - Logging Module
+
+This module provides functionality for setting up and managing logging throughout the system.
+
+### Functions
+
+#### `setup_logger(name, log_file, level=logging.INFO)`
+Sets up a logger with the specified name, log file, and logging level.
+
+##### Parameters:
+- **`name`**: The name of the logger.
+- **`log_file`**: The file where logs will be written.
+- **`level`**: The logging level (e.g., `logging.INFO`, `logging.DEBUG`).
+
+##### Example Usage:
+```python
+log = setup_logger("smart_home", "./smart_home.log", level=logging.DEBUG)
+```
+
+#### `log_message(logger, message, level=logging.INFO)`
+Logs a message with the specified logger and logging level.
+
+##### Parameters:
+- **`logger`**: The logger instance.
+- **`message`**: The message to log.
+- **`level`**: The logging level (e.g., `logging.INFO`, `logging.ERROR`).
+
+##### Example Usage:
+```python
+log_message(log, "System initialized successfully.", level=logging.INFO)
+```
+
+#### `get_logger()`
+Returns the global logger instance.
+
+##### Example Usage:
+```python
+log = get_logger()
+log.info("This is a log message.")
+```
+
+---
+
+## 2. `sen_hal.py` - Sensor Hardware Abstraction Layer
 
 This module provides functionality to interface with an ADC (Analog-to-Digital Converter) and read current values using an ACS712 current sensor.
 
@@ -57,6 +102,7 @@ This module provides functionality to interface with an ADC (Analog-to-Digital C
 - **`ACS712_SENSITIVITY`**: Sensitivity of the ACS712 current sensor in V/A (e.g., 185mV/A for a 5A module).
 - **`VREF`**: Reference voltage for the ADS1115 ADC.
 - **`ADC_RESOLUTION`**: Resolution of the ADC (16-bit, 32768).
+- **`ADC_CALIBRATION`**: Calibration value for the sensor to mitigate inaccuracies in readings.
 
 ### Global Variables
 
@@ -65,7 +111,7 @@ This module provides functionality to interface with an ADC (Analog-to-Digital C
 ### Functions
 
 #### `adc_init()`
-Initializes the ADC by creating an instance of the ADS1115 ADC and setting up the I2C bus.
+Initializes the ADC by creating an instance of the ADS1115 ADC.
 
 ##### Example Usage:
 ```python
@@ -75,13 +121,13 @@ adc_init()
 #### `read_current(device_id)`
 Reads the current value for a given device ID.
 
-1. Reads the raw ADC value using the `read_adc` method.
+1. Reads the raw ADC value using the `read_adc` method (10 samples).
 2. Converts the raw ADC value to voltage using the formula:
-   ```
+   ```python
    voltage = (raw_value / ADC_RESOLUTION) * VREF
    ```
 3. Calculates the current in amperes using the formula:
-   ```
+   ```python
    current = (voltage - (VREF / 2)) / ACS712_SENSITIVITY
    ```
 4. Returns the calculated current.
@@ -98,30 +144,11 @@ current = read_current(0)
 print(f"Current: {current} A")
 ```
 
-### Dependencies
-- `time`: Standard Python library for time-related functions.
-- `board`: Library for accessing board-specific I2C pins.
-- `busio`: Library for creating I2C bus instances.
-- `Adafruit_ADS1x15`: Library for interfacing with the ADS1115 ADC.
-- `random`: Standard Python library for generating random numbers (used in the simulated function).
-
-### Example Workflow
-1. Initialize the ADC:
-   ```python
-   adc_init()
-   ```
-2. Read the current for a specific device:
-   ```python
-   current = read_current(0)
-   print(f"Current: {current} A")
-   ```
-
-  ![](./out/design/sens_hal/sens_hal.png)
-
+![](./out/design/sens_hal/sens_hal.png)
 
 ---
 
-## 2. `sens_db.py` - SQLite Database for Sensor Data
+## 3. `sens_db.py` - SQLite Database for Sensor Data
 
 This module provides functionality to manage an SQLite database for storing and retrieving sensor data.
 
@@ -194,6 +221,7 @@ if row:
 else:
     print("Invalid row index.")
 ```
+
 ![](./out/design/sens_db/sens_db.png)
 
 ---
@@ -210,6 +238,11 @@ This module posts sensor data from the database to a remote server using HTTP re
 #### `post_sensor_data()`
 Posts sensor data from the database to a remote server.
 
+1. Reads rows from the database.
+2. Filters and processes data for each device.
+3. Sends the data to the server using HTTP POST requests.
+4. Implements retry logic for failed requests.
+
 ##### Example Usage:
 ```python
 post_sensor_data()
@@ -219,7 +252,7 @@ post_sensor_data()
 
 ---
 
-## 4. `main.py` - Smart Home Sensor Data Collection and Web Posting
+## 5. `main.py` - Smart Home Sensor Data Collection and Web Posting
 
 This script orchestrates the entire workflow of the smart home system, including data collection, storage, and web posting.
 
@@ -230,21 +263,12 @@ This script orchestrates the entire workflow of the smart home system, including
 ### Functions
 
 #### `read_sensor_data(device_id)`
-Simulates reading current values from a sensor and calculates power.
+Reads current values from a sensor and calculates power.
 
 ##### Example Usage:
 ```python
 power, current = read_sensor_data(0)
 print(f"Power: {power} W, Current: {current} A")
-```
-
-#### `create_data_entry(deviceid, power, current, timestamp)`
-Creates a dictionary entry for sensor data.
-
-##### Example Usage:
-```python
-data_entry = create_data_entry(0, 230.0, 1.0, "2025-04-19 12:00:00")
-print(data_entry)
 ```
 
 #### `data_Collection(cursor, conn)`
@@ -256,23 +280,21 @@ data_Collection(cursor, conn)
 ```
 
 #### `main()`
-Initializes the system, starts data collection and web posting threads, and manages their lifecycle.
+Initializes the logger, system, starts data collection and web posting threads, and manages their lifecycle.
 
 ##### Example Usage:
 ```python
 if __name__ == "__main__":
     main()
 ```
+
 ![](./out/design/sequence/sequence.png)
-
-
-
 
 ---
 
 ## Notes
 
-- The system assumes a constant voltage of 230V for power calculations for indian households.
+- The system assumes a constant voltage of 230V for power calculations for Indian households.
 - Update the `URL` in `sen_web.py` to match the actual server endpoint.
 
 ---
